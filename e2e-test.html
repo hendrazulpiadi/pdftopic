@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /><title>E2E</title></head>
+<body>
+<pre id="result">running</pre>
+<iframe id="app" src="index.html" style="width:1200px;height:900px"></iframe>
+<script>
+const log = [];
+const out = document.getElementById('result');
+function report(line) { log.push(line); out.textContent = log.join('\n'); }
+
+function waitFor(fn, label, timeout) {
+  timeout = timeout || 25000;
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+    (function loop() {
+      let value = false;
+      try { value = fn(); } catch (e) { value = false; }
+      if (value) return resolve(value);
+      if (Date.now() - start > timeout) return reject(new Error('timeout: ' + label));
+      setTimeout(loop, 50);
+    })();
+  });
+}
+
+const frame = document.getElementById('app');
+
+frame.addEventListener('load', async () => {
+  const w = frame.contentWindow;
+  const d = frame.contentDocument;
+  const visible = (id) => { const n = d.getElementById(id); return n && !n.hidden; };
+  const $ = (id) => d.getElementById(id);
+
+  async function makePdf(name, pages) {
+    const { PDFDocument } = w.PDFLib;
+    const doc = await PDFDocument.create();
+    for (let i = 0; i < pages; i += 1) doc.addPage(new w.Array(300, 400));
+    const bytes = await doc.save();
+    return new w.File([bytes], name, { type: 'application/pdf' });
+  }
+
+  function dispatchFile(inputId, files) {
+    const input = $(inputId);
+    const dt = new w.DataTransfer();
+    files.forEach((f) => dt.items.add(f));
+    input.files = dt.files;
+    input.dispatchEvent(new w.Event('change', { bubbles: true }));
+  }
+
+  async function resetToUpload() {
+    $('newConversionBtn').click();
+    await waitFor(() => visible('uploadView'), 'reset to upload');
+  }
+
+  try {
+    w.addEventListener('error', (e) => report('app error: ' + e.message));
+    w.addEventListener('unhandledrejection', (e) => report('app rejection: ' + (e.reason && e.reason.message)));
+    await waitFor(() => w.PDFLib && w.pdfjsLib, 'libraries loaded');
+    report('step: libraries loaded (pdfjs ' + w.pdfjsLib.version + ')');
+    report('step: base path ' + w.location.pathname);
+    report('step: csp=' + !!d.querySelector('meta[http-equiv="Content-Security-Policy"]') + ' inter=' + d.fonts.check('16px Inter'));
+
+    const sample = await makePdf('contoh.pdf', 2);
+    report('step: sample pdf made (' + sample.size + ' bytes)');
+    dispatchFile('fileInput', [sample]);
+    await waitFor(() => !$('convertBtn').disabled, 'pdf thumbnails');
+    $('convertBtn').click();
+    await waitFor(() => visible('successView'), 'pdf->image success');
+    report('1 PDF->PNG: ' + $('successFilename').textContent + ' | ' + $('successText').textContent);
+    await resetToUpload();
+
+    const canvas = d.createElement('canvas');
+    canvas.width = 400; canvas.height = 300;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#22aa66'; ctx.fillRect(0, 0, 400, 300);
+    const blob = await new Promise((r) => canvas.toBlob(r, 'image/png'));
+    const img1 = new w.File([blob], 'gambar-satu.png', { type: 'image/png' });
+    const img2 = new w.File([blob], 'gambar-dua.png', { type: 'image/png' });
+    dispatchFile('imageInput', [img1, img2]);
+    await waitFor(() => !$('imageConvertBtn').disabled, 'images ready');
+    $('imageConvertBtn').click();
+    await waitFor(() => visible('successView'), 'image->pdf success');
+    report('2 PNG->PDF: ' + $('successFilename').textContent + ' | ' + $('successText').textContent);
+    await resetToUpload();
+
+    dispatchFile('mergeInput', [await makePdf('bagian-a.pdf', 1), await makePdf('bagian-b.pdf', 2)]);
+    await waitFor(() => !$('mergeConvertBtn').disabled, 'merge ready');
+    $('mergeConvertBtn').click();
+    await waitFor(() => visible('successView'), 'merge success');
+    report('3 Gabung: ' + $('successFilename').textContent + ' | ' + $('successText').textContent);
+    await resetToUpload();
+
+    dispatchFile('splitInput', [await makePdf('pecah.pdf', 3)]);
+    await waitFor(() => !$('splitConvertBtn').disabled, 'split thumbnails');
+    $('splitConvertBtn').click();
+    await waitFor(() => visible('successView'), 'split single success');
+    report('4 Pisah: ' + $('successFilename').textContent + ' | ' + $('successText').textContent);
+    await resetToUpload();
+
+    dispatchFile('splitInput', [await makePdf('pecah2.pdf', 3)]);
+    await waitFor(() => !$('splitConvertBtn').disabled, 'split2 thumbnails');
+    const each = d.querySelector('input[name="splitMode"][value="each"]');
+    each.checked = true;
+    each.dispatchEvent(new w.Event('change', { bubbles: true }));
+    $('splitConvertBtn').click();
+    await waitFor(() => visible('successView'), 'split each success');
+    report('5 Pisah ZIP: ' + $('successFilename').textContent + ' | ' + $('successText').textContent);
+    await resetToUpload();
+
+    dispatchFile('fileInput', [await makePdf('satu.pdf', 1)]);
+    await waitFor(() => !$('convertBtn').disabled, 'pdf jpg thumbnails');
+    const jpgFormat = d.querySelector('input[name="format"][value="jpg"]');
+    jpgFormat.checked = true;
+    jpgFormat.dispatchEvent(new w.Event('change', { bubbles: true }));
+    $('convertBtn').click();
+    await waitFor(() => visible('successView'), 'pdf->jpg success');
+    report('6 PDF->JPG: ' + $('successFilename').textContent + ' | ' + $('successText').textContent);
+    await resetToUpload();
+
+    const jpgBlob = await new Promise((r) => canvas.toBlob(r, 'image/jpeg', 0.9));
+    const jpgFile = new w.File([jpgBlob], 'foto.jpg', { type: 'image/jpeg' });
+    dispatchFile('imageInput', [jpgFile]);
+    await waitFor(() => !$('imageConvertBtn').disabled, 'jpg ready');
+    $('imageConvertBtn').click();
+    await waitFor(() => visible('successView'), 'jpg->pdf success');
+    report('7 JPG->PDF: ' + $('successFilename').textContent + ' | ' + $('successText').textContent);
+
+    report('RESULT: ALL PASS');
+  } catch (error) {
+    report('RESULT: FAIL ' + (error && error.message));
+    report('stack: ' + (error && error.stack ? String(error.stack).split('\n').slice(0, 6).join(' | ') : '-'));
+    report('toast: ' + ($('toastText') ? $('toastText').textContent : '-'));
+  }
+});
+</script>
+</body>
+</html>
