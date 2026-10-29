@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self'; connect-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'" />
+  <meta name="referrer" content="no-referrer" />
+  <title>PDFtoPic — Konversi PDF, Gambar, Gabung &amp; Pisah tanpa upload</title>
+  <meta name="description" content="Ubah PDF ke PNG/JPG, gambar ke PDF, gabungkan beberapa PDF, dan pisahkan halaman PDF langsung di browser. Cepat, gratis, dan file Anda tidak pernah diunggah ke server." />
+  <meta name="theme-color" content="#f4f7fb" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preload" href="vendor/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Lewati ke konten utama</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="./" aria-label="PDFtoPic, ke halaman utama">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+            <path d="M14 3v5h5" />
+            <path d="M8.5 13.5h7" />
+            <path d="M8.5 17h4" />
+          </svg>
+        </span>
+        <span class="brand-name">PDF<span>to</span>Pic</span>
+      </a>
+      <span class="privacy-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+        100% diproses di perangkat
+      </span>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+
+    <!-- ================= UPLOAD ================= -->
+    <section id="uploadView" class="view" aria-label="Pilih alat dan unggah file">
+
+      <div class="tool-tabs" role="tablist" aria-label="Pilih alat konversi">
+        <button type="button" class="tool-tab is-active" id="tab-pdfToImage" data-tool="pdfToImage" role="tab" aria-selected="true" aria-controls="panel-pdfToImage">
+          <span class="tool-tab-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="m8 15 3-3 2 2 3-4 3 5" /><circle cx="8.5" cy="8.5" r="1.2" /></svg>
+          </span>
+          PDF → Gambar
+        </button>
+        <button type="button" class="tool-tab" id="tab-imageToPdf" data-tool="imageToPdf" role="tab" aria-selected="false" aria-controls="panel-imageToPdf">
+          <span class="tool-tab-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" /><path d="m8 16 2.5-2.5L12 15l2-2.5 2 3.5" /></svg>
+          </span>
+          Gambar → PDF
+        </button>
+        <button type="button" class="tool-tab" id="tab-merge" data-tool="merge" role="tab" aria-selected="false" aria-controls="panel-merge">
+          <span class="tool-tab-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H6a2 2 0 0 0-2 2v4" /><path d="M16 3h2a2 2 0 0 1 2 2v4" /><path d="M12 8v10" /><path d="m8 14 4 4 4-4" /><path d="M4 21h16" /></svg>
+          </span>
+          Gabung PDF
+        </button>
+        <button type="button" class="tool-tab" id="tab-split" data-tool="split" role="tab" aria-selected="false" aria-controls="panel-split">
+          <span class="tool-tab-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v8" /><path d="M12 11 6 17" /><path d="m12 11 6 6" /><path d="M6 17v4h4" /><path d="M18 17v4h-4" /></svg>
+          </span>
+          Pisah PDF
+        </button>
+      </div>
+
+      <!-- ---------- Panel: PDF → Gambar ---------- -->
+      <div class="tool-panel" id="panel-pdfToImage" data-panel="pdfToImage" role="tabpanel" aria-labelledby="tab-pdfToImage">
+        <div class="hero">
+          <span class="eyebrow">Konverter PDF gratis</span>
+          <h1>Ubah PDF jadi <span class="hl hl-blue">PNG</span> atau <span class="hl hl-green">JPG</span> dalam sekejap</h1>
+          <p class="hero-text">Taruh file PDF, pilih format, lalu unduh gambar per halaman. Semua proses berjalan di browser Anda — tanpa upload, tanpa antre, tanpa akun.</p>
+        </div>
+
+        <div class="unsupported-notice" id="unsupportedNotice" hidden>
+          <strong>Browser belum didukung.</strong> Aplikasi ini membutuhkan Chrome, Edge, Firefox, atau Safari versi terbaru. Silakan perbarui browser Anda.
+        </div>
+
+        <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-describedby="dropzoneHint">
+          <div class="dropzone-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 16V4" />
+              <path d="m7 9 5-5 5 5" />
+              <path d="M20 15v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3" />
+            </svg>
+          </div>
+          <p class="dropzone-title">Seret &amp; lepas file PDF di sini</p>
+          <p class="dropzone-sub">atau</p>
+          <span class="btn btn-primary dropzone-btn">Pilih file PDF</span>
+          <p class="dropzone-hint" id="dropzoneHint">Hanya file .pdf · Maksimal 50 MB · Diproses lokal</p>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11l-1 8.5L19.5 10H13z" /></svg>
+            </span>
+            <span><strong>Cepat</strong><small>Tanpa antre upload</small></span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
+            </span>
+            <span><strong>Privasi aman</strong><small>File tidak pernah keluar</small></span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M3 9h18" /><path d="M9 21V9" /></svg>
+            </span>
+            <span><strong>Pilih halaman</strong><small>PNG, JPG, atau ZIP</small></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------- Panel: Gambar → PDF ---------- -->
+      <div class="tool-panel" id="panel-imageToPdf" data-panel="imageToPdf" role="tabpanel" aria-labelledby="tab-imageToPdf" hidden>
+        <div class="hero">
+          <span class="eyebrow">Gambar ke dokumen</span>
+          <h1>Satukan <span class="hl hl-blue">PNG</span> &amp; <span class="hl hl-green">JPG</span> menjadi satu PDF</h1>
+          <p class="hero-text">Pilih satu atau beberapa gambar, atur urutannya, lalu jadikan PDF rapi. Setiap gambar menjadi satu halaman.</p>
+        </div>
+
+        <div id="imageDropzone" class="dropzone" role="button" tabindex="0" aria-describedby="imageDropzoneHint">
+          <div class="dropzone-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3" />
+              <circle cx="8.5" cy="8.5" r="1.6" />
+              <path d="m21 15-4.5-4.5L7 21" />
+            </svg>
+          </div>
+          <p class="dropzone-title">Seret &amp; lepas gambar di sini</p>
+          <p class="dropzone-sub">atau</p>
+          <span class="btn btn-primary dropzone-btn">Pilih gambar</span>
+          <p class="dropzone-hint" id="imageDropzoneHint">PNG atau JPG · Bisa banyak file · Maks. 50 MB per file</p>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M3 9h18" /><path d="M9 21V9" /></svg>
+            </span>
+            <span><strong>Banyak gambar</strong><small>Satu gambar per halaman</small></span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16" /><path d="M4 12h16" /><path d="M4 17h10" /></svg>
+            </span>
+            <span><strong>Atur urutan</strong><small>Geser halaman sesuka hati</small></span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
+            </span>
+            <span><strong>Tanpa upload</strong><small>Diproses di browser</small></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------- Panel: Gabung PDF ---------- -->
+      <div class="tool-panel" id="panel-merge" data-panel="merge" role="tabpanel" aria-labelledby="tab-merge" hidden>
+        <div class="hero">
+          <span class="eyebrow">Gabung dokumen</span>
+          <h1>Gabungkan beberapa <span class="hl hl-blue">PDF</span> jadi satu file</h1>
+          <p class="hero-text">Tambahkan dua file atau lebih, atur urutannya, lalu gabungkan. Kualitas dan teks asli tetap utuh karena halaman disalin, bukan diubah jadi gambar.</p>
+        </div>
+
+        <div id="mergeDropzone" class="dropzone" role="button" tabindex="0" aria-describedby="mergeDropzoneHint">
+          <div class="dropzone-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 3H6a2 2 0 0 0-2 2v4" /><path d="M16 3h2a2 2 0 0 1 2 2v4" />
+              <path d="M12 8v10" /><path d="m8 14 4 4 4-4" /><path d="M4 21h16" />
+            </svg>
+          </div>
+          <p class="dropzone-title">Seret &amp; lepas file PDF di sini</p>
+          <p class="dropzone-sub">atau</p>
+          <span class="btn btn-primary dropzone-btn">Pilih file PDF</span>
+          <p class="dropzone-hint" id="mergeDropzoneHint">Bisa banyak file · Maks. 50 MB per file · Diproses lokal</p>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16" /><path d="M4 12h16" /><path d="M4 17h10" /></svg>
+            </span>
+            <span><strong>Urutkan bebas</strong><small>Naikkan atau turunkan file</small></span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10" /></svg>
+            </span>
+            <span><strong>Kualitas asli</strong><small>Halaman disalin utuh</small></span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
+            </span>
+            <span><strong>Privasi aman</strong><small>File tidak pernah keluar</small></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------- Panel: Pisah PDF ---------- -->
+      <div class="tool-panel" id="panel-split" data-panel="split" role="tabpanel" aria-labelledby="tab-split" hidden>
+        <div class="hero">
+          <span class="eyebrow">Pisah dokumen</span>
+          <h1>Pisahkan halaman <span class="hl hl-blue">PDF</span> jadi file terpisah</h1>
+          <p class="hero-text">Pilih halaman lewat pratinjau, lalu ekstrak ke satu PDF baru atau pecah menjadi satu PDF per halaman dalam file ZIP.</p>
+        </div>
+
+        <div id="splitDropzone" class="dropzone" role="button" tabindex="0" aria-describedby="splitDropzoneHint">
+          <div class="dropzone-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3v8" /><path d="M12 11 6 17" /><path d="m12 11 6 6" />
+              <path d="M6 17v4h4" /><path d="M18 17v4h-4" />
+            </svg>
+          </div>
+          <p class="dropzone-title">Seret &amp; lepas file PDF di sini</p>
+          <p class="dropzone-sub">atau</p>
+          <span class="btn btn-primary dropzone-btn">Pilih file PDF</span>
+          <p class="dropzone-hint" id="splitDropzoneHint">Hanya file .pdf · Maksimal 50 MB · Diproses lokal</p>
+        </div>
+
+        <div class="feature-row">
+          <div class="feature">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M3 9h18" /><path d="M9 21V9" /></svg>
+            </span>
+            <span><strong>Pratinjau halaman</strong><small>Pilih halaman yang dipisah</small></span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5" /></svg>
+            </span>
+            <span><strong>Dua mode</strong><small>Satu PDF atau ZIP</small></span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>
+            </span>
+            <span><strong>Tanpa upload</strong><small>Diproses di browser</small></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= WORKSPACE: PDF → GAMBAR ================= -->
+    <section id="workspaceView" class="view" hidden aria-labelledby="workspaceHeading">
+      <h2 id="workspaceHeading" class="sr-only" tabindex="-1">Pengaturan konversi PDF</h2>
+
+      <div class="view-topbar">
+        <button type="button" id="backBtn" class="text-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></svg>
+          Ganti file
+        </button>
+      </div>
+
+      <div class="file-card card">
+        <div class="file-icon" aria-hidden="true">
+          <span>PDF</span>
+        </div>
+        <div class="file-meta">
+          <p class="file-name" id="fileName">dokumen.pdf</p>
+          <p class="file-sub" id="fileMeta">—</p>
+        </div>
+        <span class="status-badge is-loading" id="loadBadge">
+          <span class="mini-spinner" aria-hidden="true"></span>
+          <span id="loadBadgeText">Memuat…</span>
+        </span>
+      </div>
+
+      <div class="workspace-grid">
+        <div class="pages-card card">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">Pratinjau halaman</h2>
+              <p class="card-sub" id="selectionInfo">Menyiapkan pratinjau…</p>
+            </div>
+            <div class="page-actions">
+              <button type="button" id="selectAllBtn" class="text-btn small" disabled>Pilih semua</button>
+              <span class="divider" aria-hidden="true"></span>
+              <button type="button" id="selectNoneBtn" class="text-btn small" disabled>Kosongkan</button>
+            </div>
+          </div>
+
+          <div id="thumbGrid" class="thumb-grid">
+            <div class="thumb-loading">
+              <span class="spinner small" aria-hidden="true"></span>
+              <span>Membaca dokumen…</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="options-card card" aria-label="Pengaturan output">
+          <h2 class="card-title">Pengaturan</h2>
+
+          <fieldset class="field">
+            <legend>Format gambar</legend>
+            <div class="segmented">
+              <label class="seg-option">
+                <input type="radio" name="format" value="png" checked />
+                <span>PNG<small>Kualitas terbaik</small></span>
+              </label>
+              <label class="seg-option">
+                <input type="radio" name="format" value="jpg" />
+                <span>JPG<small>Ukuran lebih kecil</small></span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="field">
+            <legend>Kualitas</legend>
+            <div class="quality-list">
+              <label class="quality-option">
+                <input type="radio" name="quality" value="72" checked />
+                <span class="quality-dot" aria-hidden="true"></span>
+                <span class="quality-text"><strong>Standar</strong><small>72 DPI · serba cepat</small></span>
+              </label>
+              <label class="quality-option">
+                <input type="radio" name="quality" value="300" />
+                <span class="quality-dot" aria-hidden="true"></span>
+                <span class="quality-text"><strong>High quality</strong><small>300 DPI · tajam untuk cetak</small></span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="privacy-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+            <p>File tetap berada di perangkat Anda. Tidak ada data yang dikirim ke server.</p>
+          </div>
+        </aside>
+      </div>
+
+      <div class="action-bar card">
+        <div class="action-info">
+          <strong id="selectedCount">0 halaman dipilih</strong>
+          <span id="outputSummary">PNG · 72 DPI</span>
+        </div>
+        <button type="button" id="convertBtn" class="btn btn-primary" disabled>Menyiapkan pratinjau…</button>
+      </div>
+    </section>
+
+    <!-- ================= WORKSPACE: GAMBAR → PDF ================= -->
+    <section id="imageWorkspaceView" class="view" hidden aria-labelledby="imageWorkspaceHeading">
+      <h2 id="imageWorkspaceHeading" class="sr-only" tabindex="-1">Pengaturan gambar ke PDF</h2>
+
+      <div class="view-topbar">
+        <button type="button" id="imageBackBtn" class="text-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></svg>
+          Ganti gambar
+        </button>
+      </div>
+
+      <div class="workspace-grid">
+        <div class="pages-card card">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">Gambar terpilih</h2>
+              <p class="card-sub" id="imageInfo">Belum ada gambar</p>
+            </div>
+            <div class="page-actions">
+              <button type="button" id="imageAddBtn" class="text-btn small">Tambah gambar</button>
+              <span class="divider" aria-hidden="true"></span>
+              <button type="button" id="imageClearBtn" class="text-btn small">Kosongkan</button>
+            </div>
+          </div>
+
+          <div id="imageGrid" class="image-grid"></div>
+        </div>
+
+        <aside class="options-card card" aria-label="Pengaturan output">
+          <h2 class="card-title">Pengaturan</h2>
+
+          <fieldset class="field">
+            <legend>Ukuran halaman PDF</legend>
+            <div class="quality-list">
+              <label class="quality-option">
+                <input type="radio" name="pageSize" value="a4" checked />
+                <span class="quality-dot" aria-hidden="true"></span>
+                <span class="quality-text"><strong>A4</strong><small>Gambar dipasang rapi dengan margin</small></span>
+              </label>
+              <label class="quality-option">
+                <input type="radio" name="pageSize" value="fit" />
+                <span class="quality-dot" aria-hidden="true"></span>
+                <span class="quality-text"><strong>Sesuai gambar</strong><small>Halaman mengikuti ukuran gambar</small></span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="privacy-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+            <p>Gambar tidak pernah diunggah. PDF dibuat langsung di perangkat Anda.</p>
+          </div>
+        </aside>
+      </div>
+
+      <div class="action-bar card">
+        <div class="action-info">
+          <strong id="imageCount">0 gambar</strong>
+          <span id="imageSummary">A4 · PDF</span>
+        </div>
+        <button type="button" id="imageConvertBtn" class="btn btn-primary" disabled>Pilih gambar dulu</button>
+      </div>
+    </section>
+
+    <!-- ================= WORKSPACE: GABUNG PDF ================= -->
+    <section id="mergeWorkspaceView" class="view" hidden aria-labelledby="mergeWorkspaceHeading">
+      <h2 id="mergeWorkspaceHeading" class="sr-only" tabindex="-1">Pengaturan penggabungan PDF</h2>
+
+      <div class="view-topbar">
+        <button type="button" id="mergeBackBtn" class="text-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></svg>
+          Ganti file
+        </button>
+      </div>
+
+      <div class="workspace-grid">
+        <div class="pages-card card">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">Urutan file</h2>
+              <p class="card-sub" id="mergeInfo">Belum ada file</p>
+            </div>
+            <div class="page-actions">
+              <button type="button" id="mergeAddBtn" class="text-btn small">Tambah PDF</button>
+              <span class="divider" aria-hidden="true"></span>
+              <button type="button" id="mergeClearBtn" class="text-btn small">Kosongkan</button>
+            </div>
+          </div>
+
+          <ol id="mergeList" class="file-list"></ol>
+        </div>
+
+        <aside class="options-card card" aria-label="Ringkasan">
+          <h2 class="card-title">Ringkasan</h2>
+          <dl class="summary-list">
+            <div><dt>Jumlah file</dt><dd id="mergeFileCount">0</dd></div>
+            <div><dt>Total halaman</dt><dd id="mergePageCount">0</dd></div>
+          </dl>
+          <p class="hint-text">Halaman akan digabung sesuai urutan daftar. Gunakan tombol panah untuk mengatur posisi file.</p>
+          <div class="privacy-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+            <p>Semua file diproses lokal. Tidak ada yang dikirim ke server.</p>
+          </div>
+        </aside>
+      </div>
+
+      <div class="action-bar card">
+        <div class="action-info">
+          <strong id="mergeCount">0 file</strong>
+          <span id="mergeSummary">PDF · gabungan</span>
+        </div>
+        <button type="button" id="mergeConvertBtn" class="btn btn-primary" disabled>Tambahkan minimal 2 file</button>
+      </div>
+    </section>
+
+    <!-- ================= WORKSPACE: PISAH PDF ================= -->
+    <section id="splitWorkspaceView" class="view" hidden aria-labelledby="splitWorkspaceHeading">
+      <h2 id="splitWorkspaceHeading" class="sr-only" tabindex="-1">Pengaturan pemisahan PDF</h2>
+
+      <div class="view-topbar">
+        <button type="button" id="splitBackBtn" class="text-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5" /><path d="m12 19-7-7 7-7" /></svg>
+          Ganti file
+        </button>
+      </div>
+
+      <div class="file-card card">
+        <div class="file-icon" aria-hidden="true">
+          <span>PDF</span>
+        </div>
+        <div class="file-meta">
+          <p class="file-name" id="splitFileName">dokumen.pdf</p>
+          <p class="file-sub" id="splitFileMeta">—</p>
+        </div>
+        <span class="status-badge is-loading" id="splitBadge">
+          <span class="mini-spinner" aria-hidden="true"></span>
+          <span id="splitBadgeText">Memuat…</span>
+        </span>
+      </div>
+
+      <div class="workspace-grid">
+        <div class="pages-card card">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">Pratinjau halaman</h2>
+              <p class="card-sub" id="splitSelectionInfo">Menyiapkan pratinjau…</p>
+            </div>
+            <div class="page-actions">
+              <button type="button" id="splitSelectAllBtn" class="text-btn small" disabled>Pilih semua</button>
+              <span class="divider" aria-hidden="true"></span>
+              <button type="button" id="splitSelectNoneBtn" class="text-btn small" disabled>Kosongkan</button>
+            </div>
+          </div>
+
+          <div id="splitGrid" class="thumb-grid">
+            <div class="thumb-loading">
+              <span class="spinner small" aria-hidden="true"></span>
+              <span>Membaca dokumen…</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="options-card card" aria-label="Pengaturan output">
+          <h2 class="card-title">Pengaturan</h2>
+
+          <fieldset class="field">
+            <legend>Hasil pemisahan</legend>
+            <div class="quality-list">
+              <label class="quality-option">
+                <input type="radio" name="splitMode" value="single" checked />
+                <span class="quality-dot" aria-hidden="true"></span>
+                <span class="quality-text"><strong>Satu PDF</strong><small>Halaman terpilih digabung jadi satu file</small></span>
+              </label>
+              <label class="quality-option">
+                <input type="radio" name="splitMode" value="each" />
+                <span class="quality-dot" aria-hidden="true"></span>
+                <span class="quality-text"><strong>Satu PDF per halaman</strong><small>Diunduh sebagai file ZIP</small></span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="privacy-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+            <p>PDF diproses di perangkat Anda dan tidak pernah dikirim ke server.</p>
+          </div>
+        </aside>
+      </div>
+
+      <div class="action-bar card">
+        <div class="action-info">
+          <strong id="splitSelectedCount">0 halaman dipilih</strong>
+          <span id="splitOutputSummary">Satu PDF</span>
+        </div>
+        <button type="button" id="splitConvertBtn" class="btn btn-primary" disabled>Menyiapkan pratinjau…</button>
+      </div>
+    </section>
+
+    <!-- ================= PROGRESS ================= -->
+    <section id="progressView" class="view" hidden aria-labelledby="progressTitle">
+      <div class="progress-card card">
+        <div class="spinner" aria-hidden="true"></div>
+        <h2 id="progressTitle" class="progress-title" tabindex="-1">Memproses…</h2>
+        <p class="progress-status" id="progressStatus" aria-live="polite">Menyiapkan…</p>
+
+        <div class="progress-track" id="progressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progres konversi">
+          <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-foot">
+          <span id="progressPercent">0%</span>
+          <span id="progressHint">Jangan tutup tab ini</span>
+        </div>
+
+        <button type="button" id="cancelBtn" class="btn btn-ghost">Batalkan</button>
+      </div>
+    </section>
+
+    <!-- ================= SUCCESS ================= -->
+    <section id="successView" class="view" hidden aria-labelledby="successTitle">
+      <div class="success-card card">
+        <div class="success-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10" /></svg>
+        </div>
+        <h2 id="successTitle" class="success-title" tabindex="-1">Berhasil!</h2>
+        <p class="success-text" id="successText">File Anda sudah siap.</p>
+        <p class="success-file" id="successFilename">—</p>
+
+        <div class="success-actions">
+          <button type="button" id="downloadBtn" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M5 21h14" /></svg>
+            Unduh file
+          </button>
+          <button type="button" id="newConversionBtn" class="btn btn-ghost">Konversi file lain</button>
+        </div>
+        <p class="auto-note" id="autoNote">Unduhan otomatis dimulai. Jika tidak, klik tombol Unduh.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p><strong>PDFtoPic</strong> — konversi lokal, tanpa upload.</p>
+      <p>PDF ke gambar, gambar ke PDF, gabung &amp; pisah PDF. Maks. 50 MB per file.</p>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="alert" hidden>
+    <span class="toast-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 8v5" /><path d="M12 16h.01" /></svg>
+    </span>
+    <span class="toast-text" id="toastText"></span>
+    <button type="button" class="toast-close" id="toastClose" aria-label="Tutup notifikasi">&times;</button>
+  </div>
+
+  <input type="file" id="fileInput" accept=".pdf,application/pdf" hidden />
+  <input type="file" id="imageInput" accept="image/png,image/jpeg,.png,.jpg,.jpeg" multiple hidden />
+  <input type="file" id="mergeInput" accept=".pdf,application/pdf" multiple hidden />
+  <input type="file" id="splitInput" accept=".pdf,application/pdf" hidden />
+
+  <noscript>
+    <div class="noscript">Aplikasi ini membutuhkan JavaScript. Aktifkan JavaScript di browser Anda untuk mulai mengonversi.</div>
+  </noscript>
+
+  <script src="vendor/pdf.min.js" defer></script>
+  <script src="vendor/pdf-lib.min.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
